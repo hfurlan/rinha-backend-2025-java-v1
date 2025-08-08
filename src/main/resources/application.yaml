@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: rinha-backend-2025
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:rinha}
+    username: ${DB_USER:rinha}
+    password: ${DB_PASSWORD:rinha}
+    hikari:
+      maximum-pool-size: 4
+      minimum-idle: 4
+
+rinha:
+  processor-default-url: ${PROCESSOR_DEFAULT_URL:http://localhost:8001}
+  processor-fallback-url: ${PROCESSOR_DEFAULT_URL:http://localhost:8002}
+  payment-processor-scheduller-enabled: true
+
+logging:
+  level:
+    br:
+      com:
+        hfurlan: DEBUG
