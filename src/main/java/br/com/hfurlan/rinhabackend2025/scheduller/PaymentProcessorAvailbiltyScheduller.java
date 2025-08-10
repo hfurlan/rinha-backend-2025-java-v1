@@ -25,7 +25,7 @@ public class PaymentProcessorAvailbiltyScheduller {
     @Value("${rinha.processor-fallback-url}")
     private String processorFallbackUrl;
 
-    @Scheduled(fixedRate = 50000)
+    @Scheduled(fixedRate = 5000)
     public void checkAvailability() {
         PaymentProcessorServiceHealth paymentProcessorServiceHealth1 = restTemplate.getForObject(processorDefaultUrl + "/payments/service-health", PaymentProcessorServiceHealth.class);
         PaymentProcessorServiceHealth paymentProcessorServiceHealth2 = restTemplate.getForObject(processorFallbackUrl + "/payments/service-health", PaymentProcessorServiceHealth.class);
