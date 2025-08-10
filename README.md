@@ -40,5 +40,5 @@ docker run -it --rm --net="host" rinha-backend-2025-java-v1
 
 # Push to Docker Hub
 
-docker tag rinha-backend-2025-java-v1 hfurlan/rinha-backend-2025-java-v1:0.0.1
-docker push hfurlan/rinha-backend-2025-java-v1:0.0.1
+docker tag rinha-backend-2025-java-v1 hfurlan/rinha-backend-2025-java-v1:0.0.2
+docker push hfurlan/rinha-backend-2025-java-v1:0.0.2

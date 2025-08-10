@@ -8,15 +8,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 
 @RestController
 @RequiredArgsConstructor
@@ -40,10 +40,11 @@ public class PaymentsController {
             paymentProcessorPriority = paymentRepository.findPaymentProcessorPriority();
         }
 
+        OffsetDateTime now = LocalDateTime.now().atOffset(ZoneOffset.UTC);
         PaymentProcessorRequest paymentProcessorRequest = new PaymentProcessorRequest();
         paymentProcessorRequest.setAmount(payment.getAmount());
         paymentProcessorRequest.setCorrelationId(payment.getCorrelationId());
-        paymentProcessorRequest.setRequestedAt(LocalDateTime.now());
+        paymentProcessorRequest.setRequestedAt(LocalDateTime.now().atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
         try {
             if (paymentProcessorPriority.paymentProcessor() == 1) {
                 try {
@@ -76,7 +77,7 @@ public class PaymentsController {
                     paymentRepository.updatePaymentProcessorPriority(1);
                 }
             }
-            paymentRepository.insertPayment(payment, 1);
+            paymentRepository.insertPayment(payment, 1, now);
         } catch (HttpClientErrorException | DuplicateKeyException e) {
             log.error("Erro HTTP: response {} no paymentProcessor: {}", e, paymentProcessorPriority.paymentProcessor());
             return new ResponseEntity<>(HttpStatus.PRECONDITION_FAILED);
@@ -85,7 +86,9 @@ public class PaymentsController {
     }
 
     @GetMapping("/payments-summary")
-    public PaymentSummary getPaymentsSummary() {
-        return paymentRepository.calculateSummary();
+    public PaymentSummary getPaymentsSummary(@RequestParam String from, @RequestParam String to) {
+        LocalDateTime dtlFrom = LocalDateTime.parse(from, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        LocalDateTime dtlTo = LocalDateTime.parse(to, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        return paymentRepository.calculateSummary(dtlFrom, dtlTo);
     }
 }

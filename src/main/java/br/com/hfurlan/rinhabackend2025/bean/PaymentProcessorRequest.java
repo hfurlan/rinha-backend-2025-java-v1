@@ -11,7 +11,5 @@ import java.time.LocalDateTime;
 public class PaymentProcessorRequest {
     private String correlationId;
     private BigDecimal amount;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private LocalDateTime requestedAt;
+    private String requestedAt;
 }

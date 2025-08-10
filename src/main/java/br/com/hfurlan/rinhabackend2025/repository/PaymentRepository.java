@@ -13,22 +13,25 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Repository
 @AllArgsConstructor
 public class PaymentRepository {
 
     private final JdbcTemplate jdbcTemplate;
-    private final String INSERT_PAYMENT_SQL = "INSERT INTO PAYMENTS (CORRELATION_ID, AMOUNT, PAYMENT_PROCESSOR) values (?,?,?) ";
-    private final String SUMMARY_SQL = "SELECT PAYMENT_PROCESSOR, SUM(AMOUNT) SUM_AMOUNT, COUNT(1) QTD FROM PAYMENTS GROUP BY PAYMENT_PROCESSOR";
+    private final String INSERT_PAYMENT_SQL = "INSERT INTO PAYMENTS (CORRELATION_ID, AMOUNT, PAYMENT_PROCESSOR, INSERTED_AT) values (?,?,?,?) ";
+    private final String SUMMARY_SQL = "SELECT PAYMENT_PROCESSOR, SUM(AMOUNT) SUM_AMOUNT, COUNT(1) QTD FROM PAYMENTS WHERE INSERTED_AT BETWEEN ? AND ? GROUP BY PAYMENT_PROCESSOR";
     private final String UPDATE_PAYMENT_PROCESSOR_PRIORITY_SQL = "UPDATE PAYMENT_PROCESSOR_PRIORITY SET PAYMENT_PROCESSOR = ?, UPDATED_AT = CURRENT_TIMESTAMP";
     private final String SELECT_PAYMENT_PROCESSOR_PRIORITY_SQL = "SELECT * FROM PAYMENT_PROCESSOR_PRIORITY";
 
-    public void insertPayment(Payment payment, int paymentProcessor) {
-        jdbcTemplate.update(INSERT_PAYMENT_SQL, payment.getCorrelationId(), payment.getAmount(), paymentProcessor);
+    public void insertPayment(Payment payment, int paymentProcessor, OffsetDateTime now) {
+        jdbcTemplate.update(INSERT_PAYMENT_SQL, payment.getCorrelationId(), payment.getAmount(), paymentProcessor, Timestamp.valueOf(now.toLocalDateTime()));
     }
 
-    public PaymentSummary calculateSummary() {
+    public PaymentSummary calculateSummary(LocalDateTime from, LocalDateTime to) {
         PaymentSummary paymentSummary = new PaymentSummary();
         PaymentSummaryProcessor paymentSummaryProcessorMain = new PaymentSummaryProcessor();
         paymentSummaryProcessorMain.setTotalRequests(0);
@@ -54,7 +57,7 @@ public class PaymentRepository {
                     paymentSummary.getFallback().setTotalAmount(sumAmount);
                 }
             }
-        });
+        }, Timestamp.valueOf(from), Timestamp.valueOf(to));
         return paymentSummary;
     }
 

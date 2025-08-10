@@ -27,7 +27,7 @@ services:
           memory: "110MB"
 
   api01: &api
-    image: hfurlan/rinha-backend-2025-java-v1:0.0.1
+    image: hfurlan/rinha-backend-2025-java-v1:0.0.2
 #    image: rinha-backend-2025-java-v1
     hostname: api01
     environment:
